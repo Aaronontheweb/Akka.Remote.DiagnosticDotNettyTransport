@@ -2,8 +2,8 @@
   <PropertyGroup>
     <Copyright>Copyright © 208 Aaron Stannard</Copyright>
     <Authors>Aaronontheweb</Authors>
-    <VersionPrefix>0.1.1</VersionPrefix>
-    <PackageReleaseNotes>First release</PackageReleaseNotes>
+    <VersionPrefix>0.1.2</VersionPrefix>
+    <PackageReleaseNotes>Fixed bug with ArenaHeap pool stats reporting</PackageReleaseNotes>
     <PackageIconUrl>
     </PackageIconUrl>
     <PackageProjectUrl>
