@@ -52,7 +52,7 @@ namespace Akka.Remote.DiagnosticDotNettyTransport.Handlers
         {
             if (context.Allocator is PooledByteBufferAllocator pooled && IncludeInSample(_sampleRate))
             {
-                _loggingAdapter.Info($"[Channel:{0}][READ] BufferStats:{1}", context.Channel.Id.AsShortText(), pooled.DumpStats());
+                _loggingAdapter.Info("[Channel:{0}][READ] BufferStats:{1}", context.Channel.Id.AsShortText(), pooled.DumpStats());
             }
             base.ChannelRead(context, message);
         }
@@ -61,7 +61,7 @@ namespace Akka.Remote.DiagnosticDotNettyTransport.Handlers
         {
             if (context.Allocator is PooledByteBufferAllocator pooled && IncludeInSample(_sampleRate))
             {
-                _loggingAdapter.Info($"[Channel:{0}][WRITE] BufferStats:{1}", context.Channel.Id.AsShortText(), pooled.DumpStats());
+                _loggingAdapter.Info("[Channel:{0}][WRITE] BufferStats:{1}", context.Channel.Id.AsShortText(), pooled.DumpStats());
             }
             return base.WriteAsync(context, message);
         }
@@ -70,7 +70,7 @@ namespace Akka.Remote.DiagnosticDotNettyTransport.Handlers
         {
             if (context.Allocator is PooledByteBufferAllocator pooled && IncludeInSample(_sampleRate))
             {
-                _loggingAdapter.Info($"[Channel:{0}][FLUSH] BufferStats:{1}", context.Channel.Id.AsShortText(), pooled.DumpStats());
+                _loggingAdapter.Info("[Channel:{0}][FLUSH] BufferStats:{1}", context.Channel.Id.AsShortText(), pooled.DumpStats());
             }
             base.Flush(context);
         }
