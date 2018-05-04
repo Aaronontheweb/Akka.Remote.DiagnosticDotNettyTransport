@@ -1,6 +1,6 @@
 # Akka.Remote.DiagnosticDotNettyTransport
 
-Update this readme file with your details.
+A diagnostic `DotNettyTransport` implementation for Akka.Remote to troubleshoot cluster and remote stability issues for [Akka.NET](http://getakka.net/).
 
 ## Building this solution
 To run the build script associated with this solution, execute the following:
