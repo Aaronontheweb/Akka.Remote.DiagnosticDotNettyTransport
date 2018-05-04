@@ -4,8 +4,18 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard1.6;net45</TargetFrameworks>
-    <Description>Your description here.</Description>
+    <Description>A diagnostic Akka.Remote transport based on DotNetty; designed for troubleshooting memory and resource consumption issues.</Description>
   </PropertyGroup>
+
+
+  <ItemGroup>
+    <None Remove="dotnetty.diagnostic.conf" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <EmbeddedResource Include="Configuration\dotnetty.diagnostic.conf" />
+  </ItemGroup>
 
 
   <ItemGroup>
