@@ -17,7 +17,7 @@ namespace Akka.Remote.DiagnosticDotNettyTransport.Configuration
         {
             DefaultDiagnosticConfiguration =
                 ConfigurationFactory.FromResource(
-                    "Akka.Remote.DiagnosticDotNettyTransport.Config.dotnetty.diagnostic.conf", 
+                    "Akka.Remote.DiagnosticDotNettyTransport.Configuration.dotnetty.diagnostic.conf", 
                     typeof(DiagnosticConfig).GetTypeInfo().Assembly);
         }
     }
