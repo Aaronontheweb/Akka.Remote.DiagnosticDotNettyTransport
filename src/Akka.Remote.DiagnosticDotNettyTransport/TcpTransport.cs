@@ -20,7 +20,7 @@ using Google.Protobuf;
 
 namespace Akka.Remote.DiagnosticDotNettyTransport
 {
-    public abstract class TcpHandlers : CommonHandlers
+    internal abstract class TcpHandlers : CommonHandlers
     {
         private IHandleEventListener _listener;
         
@@ -124,8 +124,7 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
                     socketAddress: socketAddress, 
                     schemeIdentifier: Transport.SchemeIdentifier,
                     systemName: Transport.System.Name);
-                AssociationHandle handle;
-                Init(channel, socketAddress, remoteAddress, msg, out handle);
+                Init(channel, socketAddress, remoteAddress, msg, out var handle);
                 listener.Notify(new InboundAssociation(handle));
             }, TaskContinuationOptions.OnlyOnRanToCompletion);
         }
@@ -152,8 +151,7 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
 
         private void InitOutbound(IChannel channel, IPEndPoint socketAddress, object msg)
         {
-            AssociationHandle handle;
-            Init(channel, socketAddress, _remoteAddress, msg, out handle);
+            Init(channel, socketAddress, _remoteAddress, msg, out var handle);
             _statusPromise.TrySetResult(handle);
         }
     }
@@ -234,8 +232,7 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
         {
             IPEndPoint ipEndPoint;
 
-            var dns = socketAddress as DnsEndPoint;
-            if (dns != null)
+            if (socketAddress is DnsEndPoint dns)
                 ipEndPoint = await DnsToIPEndpoint(dns).ConfigureAwait(false);
             else
                 ipEndPoint = (IPEndPoint) socketAddress;

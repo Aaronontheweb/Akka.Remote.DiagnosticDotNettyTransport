@@ -140,7 +140,7 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
                 config = heliosFallbackConfig.WithFallback(config);
             }
 
-            Settings = DotNettyTransportSettings.Create(config);
+            Settings = DiagnosticDotNettyTransportSettings.Create(config);
             Log = Logging.GetLogger(System, GetType());
             _serverEventLoopGroup = new MultithreadEventLoopGroup(Settings.ServerSocketWorkerPoolSize);
             _clientEventLoopGroup = new MultithreadEventLoopGroup(Settings.ClientSocketWorkerPoolSize);
@@ -150,7 +150,7 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
             SchemeIdentifier = (Settings.EnableSsl ? "ssl." : string.Empty) + Settings.TransportMode.ToString().ToLowerInvariant();
         }
 
-        public DotNettyTransportSettings Settings { get; }
+        public DiagnosticDotNettyTransportSettings Settings { get; }
         public sealed override string SchemeIdentifier { get; protected set; }
         public override long MaximumPayloadBytes => Settings.MaxFrameSize;
         private TransportMode InternalTransport => Settings.TransportMode;

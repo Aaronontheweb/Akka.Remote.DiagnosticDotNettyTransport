@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="DotNettyTransportSettings.cs" company="Akka.NET Project">
+// <copyright file="DiagnosticDotNettyTransportSettings.cs" company="Akka.NET Project">
 //     Copyright (C) 2009-2018 Lightbend Inc. <http://www.lightbend.com>
 //     Copyright (C) 2013-2018 .NET Foundation <https://github.com/akkadotnet/akka.net>
 // </copyright>
@@ -22,16 +22,16 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
     /// 
     /// Defines the settings for the <see cref="Akka.Remote.DiagnosticDotNettyTransport"/>.
     /// </summary>
-    internal sealed class DotNettyTransportSettings
+    internal sealed class DiagnosticDotNettyTransportSettings
     {
-        public static DotNettyTransportSettings Create(ActorSystem system)
+        public static DiagnosticDotNettyTransportSettings Create(ActorSystem system)
         {
-            return Create(system.Settings.Config.GetConfig("akka.remote.dot-netty.tcp"));
+            return Create(system.Settings.Config.GetConfig("akka.remote.dot-netty.diagnostic.tcp"));
         }
 
-        public static DotNettyTransportSettings Create(Config config)
+        public static DiagnosticDotNettyTransportSettings Create(Config config)
         {
-            if (config == null) throw new ArgumentNullException(nameof(config), "DotNetty HOCON config was not found (default path: `akka.remote.dot-netty`)");
+            if (config == null) throw new ArgumentNullException(nameof(config), "DotNetty HOCON config was not found (default path: `akka.remote.dot-netty.diagnostic.tcp`)");
 
             var transportMode = config.GetString("transport-protocol", "tcp").ToLower();
             var host = config.GetString("hostname");
@@ -48,7 +48,7 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
                 default: throw new ArgumentException($"Unknown byte-order option [{byteOrderString}]. Supported options are: big-endian, little-endian.");
             }
 
-            return new DotNettyTransportSettings(
+            return new DiagnosticDotNettyTransportSettings(
                 transportMode: transportMode == "tcp" ? TransportMode.Tcp : TransportMode.Udp,
                 enableSsl: config.GetBoolean("enable-ssl", false),
                 connectTimeout: config.GetTimeSpan("connection-timeout", TimeSpan.FromSeconds(15)),
@@ -209,7 +209,7 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
         /// </summary>
         public readonly bool EnableBufferPooling;
 
-        public DotNettyTransportSettings(TransportMode transportMode, bool enableSsl, TimeSpan connectTimeout, string hostname, string publicHostname,
+        public DiagnosticDotNettyTransportSettings(TransportMode transportMode, bool enableSsl, TimeSpan connectTimeout, string hostname, string publicHostname,
             int port, int? publicPort, int serverSocketWorkerPoolSize, int clientSocketWorkerPoolSize, int maxFrameSize, SslSettings ssl,
             bool dnsUseIpv6, bool tcpReuseAddr, bool tcpKeepAlive, bool tcpNoDelay, int backlog, bool enforceIpFamily,
             int? receiveBufferSize, int? sendBufferSize, int? writeBufferHighWaterMark, int? writeBufferLowWaterMark, bool backwardsCompatibilityModeEnabled, bool logTransport, ByteOrder byteOrder, bool enableBufferPooling)
