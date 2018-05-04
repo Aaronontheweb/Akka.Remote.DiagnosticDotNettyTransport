@@ -16,16 +16,20 @@ using System.Threading.Tasks;
 using Akka.Actor;
 using Akka.Configuration;
 using Akka.Event;
+using Akka.Remote.DiagnosticDotNettyTransport.Handlers;
+using Akka.Remote.DiagnosticDotNettyTransport.Log;
 using Akka.Remote.Transport;
 using Akka.Remote.Transport.DotNetty;
 using Akka.Util;
 using DotNetty.Buffers;
 using DotNetty.Codecs;
+using DotNetty.Common.Internal.Logging;
 using DotNetty.Common.Utilities;
 using DotNetty.Handlers.Tls;
 using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
+using Microsoft.Extensions.Logging;
 
 namespace Akka.Remote.DiagnosticDotNettyTransport
 {
@@ -262,10 +266,14 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
             }
         }
 
+        private static bool _capturingLogs;
+
         protected Bootstrap ClientFactory(Address remoteAddress)
         {
             if (InternalTransport != TransportMode.Tcp)
                 throw new NotSupportedException("Currently DotNetty client supports only TCP tranport mode.");
+
+            SetLoggerFactory();
 
             var addressFamily = Settings.DnsUseIpv6 ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork;
 
@@ -288,6 +296,18 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
             if (Settings.WriteBufferLowWaterMark.HasValue) client.Option(ChannelOption.WriteBufferLowWaterMark, Settings.WriteBufferLowWaterMark.Value);
 
             return client;
+        }
+
+        private void SetLoggerFactory()
+        {
+            if (Settings.CaptureDotNettyLogs && _capturingLogs)
+            {
+                var f = new LoggerFactory();
+                f.AddProvider(new DotNettyLogConverterProvider(System));
+                f.CreateLogger("Akka.Remote").LogDebug("Enabled Akka.NET log conversion for DotNetty.");
+                InternalLoggerFactory.DefaultFactory = f;
+                _capturingLogs = true;
+            }
         }
 
         protected async Task<IPEndPoint> DnsToIPEndpoint(DnsEndPoint dns)
@@ -352,6 +372,12 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
                 var handler = new TcpClientHandler(this, Logging.GetLogger(System, typeof(TcpClientHandler)), remoteAddress);
                 pipeline.AddLast("ClientHandler", handler);
             }
+
+            if (Settings.EnableBufferPoolDumps)
+            {
+                var handler = new PoolAllocatorDumpHandler(Logging.GetLogger(System, typeof(PoolAllocatorDumpHandler)), Settings.BufferPoolDumpSampleRate);
+                pipeline.AddLast("Client-PoolDump", handler);
+            }
         }
 
         private void SetServerPipeline(IChannel channel)
@@ -369,6 +395,12 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
                 var handler = new TcpServerHandler(this, Logging.GetLogger(System, typeof(TcpServerHandler)), AssociationListenerPromise.Task);
                 pipeline.AddLast("ServerHandler", handler);
             }
+
+            if (Settings.EnableBufferPoolDumps)
+            {
+                var handler = new PoolAllocatorDumpHandler(Logging.GetLogger(System, typeof(PoolAllocatorDumpHandler)), Settings.BufferPoolDumpSampleRate);
+                pipeline.AddLast("Server-PoolDump", handler);
+            }
         }
 
         private ServerBootstrap ServerFactory()
@@ -377,6 +409,8 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
                 throw new NotSupportedException("Currently DotNetty server supports only TCP tranport mode.");
 
             var addressFamily = Settings.DnsUseIpv6 ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork;
+
+            SetLoggerFactory();
 
             var server = new ServerBootstrap()
                 .Group(_serverEventLoopGroup)
