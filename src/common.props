@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
-    <Copyright>Copyright © 2017 Your Company</Copyright>
-    <Authors>Your Authors</Authors>
-    <VersionPrefix>0.1.0</VersionPrefix>
+    <Copyright>Copyright © 208 Aaron Stannard</Copyright>
+    <Authors>Aaronontheweb</Authors>
+    <VersionPrefix>0.1.1</VersionPrefix>
     <PackageReleaseNotes>First release</PackageReleaseNotes>
     <PackageIconUrl>
     </PackageIconUrl>

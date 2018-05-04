@@ -49,7 +49,7 @@ namespace Akka.Remote.DiagnosticDotNettyTransport.Tests
 
             Within(TimeSpan.FromSeconds(10), () =>
             {
-                Sys2.ActorSelection(new RootActorPath(Sys2Address) / "user" / "act").Tell("hit", TestActor);
+                Sys.ActorSelection(new RootActorPath(Sys2Address) / "user" / "act").Tell("hit", TestActor);
                 ExpectMsg("hit");
             });
             

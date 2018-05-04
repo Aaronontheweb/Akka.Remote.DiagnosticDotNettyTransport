@@ -44,8 +44,8 @@ namespace Akka.Remote.DiagnosticDotNettyTransport.Handlers
         internal static bool IncludeInSample(double sampleRate)
         {
             return sampleRate == MaxSampleRate
-                   || sampleRate > ZeroSampleRate
-                   && sampleRate >= ThreadLocalRandom.Current.NextDouble();
+                   || (sampleRate > ZeroSampleRate
+                   && sampleRate >= ThreadLocalRandom.Current.NextDouble());
         }
 
         public override void ChannelRead(IChannelHandlerContext context, object message)

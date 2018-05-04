@@ -380,16 +380,16 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
             SetInitialChannelPipeline(channel);
             var pipeline = channel.Pipeline;
 
-            if (InternalTransport == TransportMode.Tcp)
-            {
-                var handler = new TcpClientHandler(this, Logging.GetLogger(System, typeof(TcpClientHandler)), remoteAddress);
-                pipeline.AddLast("ClientHandler", handler);
-            }
-
             if (Settings.EnableBufferPoolDumps)
             {
                 var handler = new PoolAllocatorDumpHandler(Logging.GetLogger(System, typeof(PoolAllocatorDumpHandler)), Settings.BufferPoolDumpSampleRate);
                 pipeline.AddLast("Client-PoolDump", handler);
+            }
+
+            if (InternalTransport == TransportMode.Tcp)
+            {
+                var handler = new TcpClientHandler(this, Logging.GetLogger(System, typeof(TcpClientHandler)), remoteAddress);
+                pipeline.AddLast("ClientHandler", handler);
             }
         }
 
@@ -403,16 +403,16 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
             SetInitialChannelPipeline(channel);
             var pipeline = channel.Pipeline;
 
-            if (Settings.TransportMode == TransportMode.Tcp)
-            {
-                var handler = new TcpServerHandler(this, Logging.GetLogger(System, typeof(TcpServerHandler)), AssociationListenerPromise.Task);
-                pipeline.AddLast("ServerHandler", handler);
-            }
-
             if (Settings.EnableBufferPoolDumps)
             {
                 var handler = new PoolAllocatorDumpHandler(Logging.GetLogger(System, typeof(PoolAllocatorDumpHandler)), Settings.BufferPoolDumpSampleRate);
                 pipeline.AddLast("Server-PoolDump", handler);
+            }
+
+            if (Settings.TransportMode == TransportMode.Tcp)
+            {
+                var handler = new TcpServerHandler(this, Logging.GetLogger(System, typeof(TcpServerHandler)), AssociationListenerPromise.Task);
+                pipeline.AddLast("ServerHandler", handler);
             }
         }
 
