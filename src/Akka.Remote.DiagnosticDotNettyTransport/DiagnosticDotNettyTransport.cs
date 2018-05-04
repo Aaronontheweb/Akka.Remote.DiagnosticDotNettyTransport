@@ -23,6 +23,7 @@ using Akka.Remote.Transport.DotNetty;
 using Akka.Util;
 using DotNetty.Buffers;
 using DotNetty.Codecs;
+using DotNetty.Common;
 using DotNetty.Common.Internal.Logging;
 using DotNetty.Common.Utilities;
 using DotNetty.Handlers.Tls;
@@ -267,6 +268,7 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
         }
 
         private static bool _capturingLogs;
+        private static bool _resourceLeakDetectionSet;
 
         protected Bootstrap ClientFactory(Address remoteAddress)
         {
@@ -274,6 +276,8 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
                 throw new NotSupportedException("Currently DotNetty client supports only TCP tranport mode.");
 
             SetLoggerFactory();
+
+            SetResourceLeakDetection();
 
             var addressFamily = Settings.DnsUseIpv6 ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork;
 
@@ -298,9 +302,18 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
             return client;
         }
 
+        private void SetResourceLeakDetection()
+        {
+            if (!_resourceLeakDetectionSet)
+            {
+                ResourceLeakDetector.Level = Settings.ResourceLeakDetectionLevel;
+                _resourceLeakDetectionSet = true;
+            }
+        }
+
         private void SetLoggerFactory()
         {
-            if (Settings.CaptureDotNettyLogs && _capturingLogs)
+            if (Settings.CaptureDotNettyLogs && !_capturingLogs)
             {
                 var f = new LoggerFactory();
                 f.AddProvider(new DotNettyLogConverterProvider(System));
@@ -411,6 +424,8 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
             var addressFamily = Settings.DnsUseIpv6 ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork;
 
             SetLoggerFactory();
+
+            SetResourceLeakDetection();
 
             var server = new ServerBootstrap()
                 .Group(_serverEventLoopGroup)
