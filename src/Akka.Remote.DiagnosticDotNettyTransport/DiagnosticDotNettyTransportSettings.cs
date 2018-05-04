@@ -12,8 +12,11 @@ using System.Security.Cryptography.X509Certificates;
 using Akka.Actor;
 using Akka.Configuration;
 using Akka.Dispatch;
+using Akka.Event;
+using Akka.Remote.DiagnosticDotNettyTransport.Handlers;
 using Akka.Util;
 using DotNetty.Buffers;
+using DotNetty.Common;
 
 namespace Akka.Remote.DiagnosticDotNettyTransport
 {
@@ -48,6 +51,9 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
                 default: throw new ArgumentException($"Unknown byte-order option [{byteOrderString}]. Supported options are: big-endian, little-endian.");
             }
 
+            var resourceLeakConfig =
+                ExtractLeakDetectionLevelFromConfig(config.GetString("resource-leak-level", "simple"));
+
             return new DiagnosticDotNettyTransportSettings(
                 transportMode: transportMode == "tcp" ? TransportMode.Tcp : TransportMode.Udp,
                 enableSsl: config.GetBoolean("enable-ssl", false),
@@ -73,7 +79,11 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
                 backwardsCompatibilityModeEnabled: config.GetBoolean("enable-backwards-compatibility", false),
                 logTransport: config.HasPath("log-transport") && config.GetBoolean("log-transport"),
                 byteOrder: order,
-                enableBufferPooling: config.GetBoolean("enable-pooling", true));
+                enableBufferPooling: config.GetBoolean("enable-pooling", true),
+                resourceLeakDetectionLevel: resourceLeakConfig,
+                enableBufferPoolDumps: config.GetBoolean("allocator-dumps.enabled", true),
+                bufferPoolDumpSampleRate: config.GetDouble("allocator.sample-rate", 1.0d),
+                captureDotNettyLogs: config.GetBoolean("capture-dotnetty-logs", true));
         }
 
         private static int? ToNullableInt(long? value) => value.HasValue && value.Value > 0 ? (int?)value.Value : null;
@@ -86,6 +96,23 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
                 floor: config.GetInt("pool-size-min"),
                 scalar: config.GetDouble("pool-size-factor"),
                 ceiling: config.GetInt("pool-size-max"));
+        }
+
+        internal static ResourceLeakDetector.DetectionLevel ExtractLeakDetectionLevelFromConfig(string parsedConfig)
+        {
+            switch (parsedConfig.ToLowerInvariant())
+            {
+                case "disabled":
+                    return ResourceLeakDetector.DetectionLevel.Disabled;
+                case "simple":
+                    return ResourceLeakDetector.DetectionLevel.Simple;
+                case "advanced":
+                    return ResourceLeakDetector.DetectionLevel.Advanced;
+                case "paranoid":
+                    return ResourceLeakDetector.DetectionLevel.Paranoid;
+                default:
+                    throw new ConfigurationException($"Unsupported ResourceLeakDetector.DetectionLevel {parsedConfig}");
+            }
         }
 
         /// <summary>
@@ -209,10 +236,31 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
         /// </summary>
         public readonly bool EnableBufferPooling;
 
+        /// <summary>
+        /// When <c>true</c>, turns on reporting of the <see cref="PoolAllocatorDumpHandler"/>.
+        /// </summary>
+        public readonly bool EnableBufferPoolDumps;
+
+        /// <summary>
+        /// The sample rate at which we will be sampling the buffer pool dumps.
+        /// </summary>
+        public readonly double BufferPoolDumpSampleRate;
+
+        /// <summary>
+        /// When <c>true</c>, captures DotNetty logs into the Akka.NET <see cref="ILoggingAdapter"/>.
+        /// </summary>
+        public readonly bool CaptureDotNettyLogs;
+
+        /// <summary>
+        /// Determines how aggressively the <see cref="ResourceLeakDetector"/> should work
+        /// to attempt to track DotNetty resource leaks in Akka.Remote.
+        /// </summary>
+        public readonly ResourceLeakDetector.DetectionLevel ResourceLeakDetectionLevel;
+
         public DiagnosticDotNettyTransportSettings(TransportMode transportMode, bool enableSsl, TimeSpan connectTimeout, string hostname, string publicHostname,
             int port, int? publicPort, int serverSocketWorkerPoolSize, int clientSocketWorkerPoolSize, int maxFrameSize, SslSettings ssl,
             bool dnsUseIpv6, bool tcpReuseAddr, bool tcpKeepAlive, bool tcpNoDelay, int backlog, bool enforceIpFamily,
-            int? receiveBufferSize, int? sendBufferSize, int? writeBufferHighWaterMark, int? writeBufferLowWaterMark, bool backwardsCompatibilityModeEnabled, bool logTransport, ByteOrder byteOrder, bool enableBufferPooling)
+            int? receiveBufferSize, int? sendBufferSize, int? writeBufferHighWaterMark, int? writeBufferLowWaterMark, bool backwardsCompatibilityModeEnabled, bool logTransport, ByteOrder byteOrder, bool enableBufferPooling, ResourceLeakDetector.DetectionLevel resourceLeakDetectionLevel, bool enableBufferPoolDumps, double bufferPoolDumpSampleRate, bool captureDotNettyLogs)
         {
             if (maxFrameSize < 32000) throw new ArgumentException("maximum-frame-size must be at least 32000 bytes", nameof(maxFrameSize));
 
@@ -241,6 +289,10 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
             LogTransport = logTransport;
             ByteOrder = byteOrder;
             EnableBufferPooling = enableBufferPooling;
+            ResourceLeakDetectionLevel = resourceLeakDetectionLevel;
+            EnableBufferPoolDumps = enableBufferPoolDumps;
+            BufferPoolDumpSampleRate = bufferPoolDumpSampleRate;
+            CaptureDotNettyLogs = captureDotNettyLogs;
         }
     }
     internal enum TransportMode

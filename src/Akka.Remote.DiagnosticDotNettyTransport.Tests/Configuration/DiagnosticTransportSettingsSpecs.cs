@@ -1,5 +1,6 @@
 using System;
 using Akka.Remote.DiagnosticDotNettyTransport.Configuration;
+using DotNetty.Common;
 using FluentAssertions;
 using Xunit;
 
@@ -13,10 +14,22 @@ namespace Akka.Remote.DiagnosticDotNettyTransport.Tests.Configuration
             DiagnosticConfig.DefaultDiagnosticConfiguration.Should().NotBeNull();
         }
 
+        [Theory(DisplayName = "Should be able to parse ResourceLeakDetector.DetectionLevel from HOCON")]
+        [InlineData(ResourceLeakDetector.DetectionLevel.Paranoid)]
+        [InlineData(ResourceLeakDetector.DetectionLevel.Advanced)]
+        [InlineData(ResourceLeakDetector.DetectionLevel.Simple)]
+        [InlineData(ResourceLeakDetector.DetectionLevel.Disabled)]
+        public void ShouldParseResourceLeakDetectorLevel(ResourceLeakDetector.DetectionLevel detectionLevel)
+        {
+            var parsedLevel =
+                DiagnosticDotNettyTransportSettings.ExtractLeakDetectionLevelFromConfig(detectionLevel.ToString());
+            parsedLevel.Should().Be(detectionLevel);
+        }
+
         [Fact(DisplayName = "Default DiagnosticDotNettyTransportSettings should be correct")]
         public void ShouldLoadDefaultDiagnosticConfigSettings()
         {
-            var c = DiagnosticConfig.DefaultDiagnosticConfiguration;
+            var c = DiagnosticConfig.DefaultDiagnosticConfiguration.GetConfig("akka.remote.dot-netty.diagnostic.tcp");
             var s = DiagnosticDotNettyTransportSettings.Create(c);
 
             Assert.Equal(TimeSpan.FromSeconds(15), s.ConnectTimeout);
@@ -37,6 +50,12 @@ namespace Akka.Remote.DiagnosticDotNettyTransport.Tests.Configuration
             Assert.False(s.DnsUseIpv6);
             Assert.False(s.LogTransport);
             Assert.False(s.EnableSsl);
+
+            // Test diagnostic settings
+            s.ResourceLeakDetectionLevel.Should().Be(ResourceLeakDetector.DetectionLevel.Simple);
+            s.EnableBufferPoolDumps.Should().BeTrue();
+            s.BufferPoolDumpSampleRate.Should().Be(1.0d);
+            s.CaptureDotNettyLogs.Should().BeTrue();
         }
     }
 }
