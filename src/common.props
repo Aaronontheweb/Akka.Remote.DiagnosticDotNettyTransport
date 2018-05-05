@@ -2,8 +2,8 @@
   <PropertyGroup>
     <Copyright>Copyright © 208 Aaron Stannard</Copyright>
     <Authors>Aaronontheweb</Authors>
-    <VersionPrefix>0.1.2</VersionPrefix>
-    <PackageReleaseNotes>Fixed bug with ArenaHeap pool stats reporting</PackageReleaseNotes>
+    <VersionPrefix>0.1.3</VersionPrefix>
+    <PackageReleaseNotes>Experimenting with using singleton allocators in Akka.Remote connection pipeline.</PackageReleaseNotes>
     <PackageIconUrl>
     </PackageIconUrl>
     <PackageProjectUrl>
