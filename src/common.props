@@ -2,8 +2,8 @@
   <PropertyGroup>
     <Copyright>Copyright © 208 Aaron Stannard</Copyright>
     <Authors>Aaronontheweb</Authors>
-    <VersionPrefix>0.2.0</VersionPrefix>
-    <PackageReleaseNotes>Upgraded to DotNetty v0.4.8</PackageReleaseNotes>
+    <VersionPrefix>0.2.1</VersionPrefix>
+    <PackageReleaseNotes>Fixed bug with sample rate HOCON setting for buffer dumps.</PackageReleaseNotes>
     <PackageIconUrl>
     </PackageIconUrl>
     <PackageProjectUrl>

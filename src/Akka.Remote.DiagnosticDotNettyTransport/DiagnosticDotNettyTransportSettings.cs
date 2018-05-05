@@ -82,7 +82,7 @@ namespace Akka.Remote.DiagnosticDotNettyTransport
                 enableBufferPooling: config.GetBoolean("enable-pooling", true),
                 resourceLeakDetectionLevel: resourceLeakConfig,
                 enableBufferPoolDumps: config.GetBoolean("allocator-dumps.enabled", true),
-                bufferPoolDumpSampleRate: config.GetDouble("allocator.sample-rate", 1.0d),
+                bufferPoolDumpSampleRate: config.GetDouble("allocator-dumps.sample-rate", 1.0d),
                 captureDotNettyLogs: config.GetBoolean("capture-dotnetty-logs", true));
         }
 
