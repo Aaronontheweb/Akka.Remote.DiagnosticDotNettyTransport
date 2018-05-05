@@ -14,9 +14,14 @@ namespace Akka.Remote.DiagnosticDotNettyTransport.Tests
     public class TransportLoadSpecs : TestKit.Xunit.TestKit
     {
         public static readonly Config TransportLoadConfig = @"
+            akka.loglevel = DEBUG
             akka.actor.provider = remote
             akka.remote.dot-netty.diagnostic.tcp.port = 0
             akka.remote.dot-netty.diagnostic.tcp.hostname = localhost
+            akka.remote.dot-netty.diagnostic.tcp.log-transport = on
+    
+            # disable allocator dumps in order to make the logs readable
+            akka.remote.dot-netty.diagnostic.tcp.allocator-dumps.enabled = off
         ";
 
         public TransportLoadSpecs(ITestOutputHelper helper)
